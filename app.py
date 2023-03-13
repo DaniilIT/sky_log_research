@@ -1,16 +1,16 @@
 from pathlib import Path
-from flask import Flask, request, abort
+
+from flask import Flask, Response, request, abort
+
 from utils import build_query
 
-
 DATA_DIR = 'data'
-
 
 app = Flask(__name__)
 
 
 @app.route('/perform_query', methods=['POST'])
-def perform_query():
+def perform_query() -> Response:
     file_name = request.form.get('file_name')
     cmd_1 = request.form.get('cmd_1')
     val_1 = request.form.get('val_1')
@@ -26,10 +26,9 @@ def perform_query():
     with open(file_path) as file:
         result = build_query(cmd_1, val_1, file)
         if cmd_2 and val_2:
-            result = build_query(cmd_2, val_2, result)
-        result = '\n'.join(result)
+            result = build_query(cmd_2, val_2, iter(result))
 
-    return app.response_class(result, content_type='text/plain')
+    return app.response_class('\n'.join(result), content_type='text/plain')
 
 
 if __name__ == '__main__':
